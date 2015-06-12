@@ -1,0 +1,20 @@
+<div class="x-select__control">
+  <div class="x-select__input">
+    {{#each value as |val|}}
+      <div class="x-select__selected-option">
+        {{val}}
+        <span {{action "deselectOption" val}} class="x-select__remove-option">x</span>
+      </div>
+    {{/each}}
+  </div>
+
+  <div class="x-select__dropdown">
+    {{input value=query placeholder="Search" class="x-select__search"}}
+
+    {{#each availableOptions as |option|}}
+      <div {{action "selectOption" option}} class="x-select__option">
+        {{option}}
+      </div>
+    {{/each}}
+  </div>
+</div>
