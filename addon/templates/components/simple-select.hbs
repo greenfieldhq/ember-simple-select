@@ -1,11 +1,18 @@
 <div class="x-select__control">
   <div class="x-select__input">
-    {{#each value as |val|}}
+    {{#if multiple}}
+      {{#each value as |val|}}
+        <div class="x-select__selected-option">
+          {{val}}
+          <span {{action "deselectOption" val}} class="x-select__remove-option">x</span>
+        </div>
+      {{/each}}
+    {{else}}
       <div class="x-select__selected-option">
-        {{val}}
-        <span {{action "deselectOption" val}} class="x-select__remove-option">x</span>
+        {{value}}
+        <span {{action "deselectOption" value}} class="x-select__remove-option">x</span>
       </div>
-    {{/each}}
+    {{/if}}
   </div>
 
   <div class="x-select__dropdown">

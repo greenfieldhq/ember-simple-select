@@ -12,24 +12,34 @@ export default Ember.Component.extend({
 
   init() {
     this._super(...arguments);
+
+    this.multiple = false;
     this.options = [];
   },
 
   availableOptions: computed('options', 'value', function() {
+    const multiple = get(this, 'multiple');
     const options = get(this, 'options');
     const value = get(this, 'value');
 
-    return options.filter((option) => {
-      return !Ember.A(value).contains(option);
-    });
+    if (multiple) {
+      return options.filter((option) => {
+        return !Ember.A(value).contains(option);
+      });
+    } else {
+      return Ember.A(options).without(value);
+    }
   }),
 
   actions: {
     selectOption(option) {
-      const previousValue = get(this, 'value');
-      const newValue = previousValue.concat(option);
+      const multiple = get(this, 'multiple');
 
-      set(this, 'value', newValue);
+      if (multiple) {
+        this._selectOptionMultiple(option);
+      } else {
+        this._selectOptionSingle(option);
+      }
     },
 
     deselectOption(option) {
@@ -38,5 +48,16 @@ export default Ember.Component.extend({
 
       set(this, 'value', newValue);
     }
+  },
+
+  _selectOptionSingle(option) {
+    set(this, 'value', option);
+  },
+
+  _selectOptionMultiple(option) {
+    const previousValue = get(this, 'value');
+    const newValue = previousValue.concat(option);
+
+    set(this, 'value', newValue);
   }
 });

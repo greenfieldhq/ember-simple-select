@@ -28,13 +28,44 @@ moduleForComponent('simple-select', 'Integration | Component | simple select', {
   integration: true
 });
 
+// single
+
+test('single - when options is an array of strings', function(assert) {
+  assert.expect(7);
+
+  this.render(hbs`
+    {{simple-select options=people value=selectedPerson}}
+  `);
+
+  run(() => {
+    set(this, 'people', ['Eric', 'Dave', 'Wizard', 'Mike']);
+    set(this, 'selectedPerson', 'Eric');
+  });
+
+  assert.equal(this.$().find('.x-select__option').length, 3, 'has correct initial available options');
+  assert.equal(this.$().find('.x-select__selected-option').length, 1, 'has correct initial selected options');
+
+  this.$().find('.x-select__option:contains("Dave")')[0].click();
+
+  // available options
+  assert.equal(this.$().find('.x-select__option:contains("Dave")').length, 0, 'Dave option was removed');
+  assert.equal(this.$().find('.x-select__option').length, 3, 'correct number of options after removing');
+
+  // selected options
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 0, 'eric option is no longer selected');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is selected');
+
+  // value in parent context
+  assert.deepEqual(get(this, 'selectedPerson'), 'Dave', 'selectedPeople in parent context updated');
+});
+
 // multiple
 
 test('multiple - when options is an array of strings', function(assert) {
   assert.expect(9);
 
   this.render(hbs`
-    {{simple-select options=people value=selectedPeople}}
+    {{simple-select options=people value=selectedPeople multiple=true}}
   `);
 
   run(() => {
