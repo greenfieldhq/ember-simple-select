@@ -15,20 +15,54 @@ export default Ember.Component.extend({
 
     this.multiple = false;
     this.options = [];
+    this.optionLabelPath = '';
+    this.optionValuePath = '';
   },
 
-  availableOptions: computed('options', 'value', function() {
+  availableOptions: computed('wrappedOptions', 'value', function() {
     const multiple = get(this, 'multiple');
-    const options = get(this, 'options');
+    const wrappedOptions = get(this, 'wrappedOptions');
     const value = get(this, 'value');
 
     if (multiple) {
-      return options.filter((option) => {
-        return !Ember.A(value).contains(option);
+      return wrappedOptions.filter((option) => {
+        return !Ember.A(value).contains(option.value);
       });
     } else {
-      return Ember.A(options).without(value);
+      return wrappedOptions.filter((option) => {
+        return option.value !== value;
+      });
     }
+  }),
+
+  selectedOptions: computed('wrappedOptions', 'value', function() {
+    const multiple = get(this, 'multiple');
+    const wrappedOptions = get(this, 'wrappedOptions');
+    const value = get(this, 'value');
+
+    if (multiple) {
+      return wrappedOptions.filter((option) => {
+        return Ember.A(value).contains(option.value);
+      });
+    } else {
+      return wrappedOptions.filter((option) => {
+        return option.value === value;
+      });
+    }
+  }),
+
+  wrappedOptions: computed('options', function() {
+    const options = get(this, 'options');
+    const optionLabelPath = get(this, 'optionLabelPath');
+    const optionValuePath = get(this, 'optionValuePath');
+
+    return options.map((option) => {
+      return {
+        label: get(option, optionLabelPath),
+        value: get(option, optionValuePath),
+        option: option
+      };
+    });
   }),
 
   actions: {
@@ -44,19 +78,19 @@ export default Ember.Component.extend({
 
     deselectOption(option) {
       const previousValue = get(this, 'value');
-      const newValue = Ember.A(previousValue).without(option);
+      const newValue = Ember.A(previousValue).without(option.value);
 
       set(this, 'value', newValue);
     }
   },
 
   _selectOptionSingle(option) {
-    set(this, 'value', option);
+    set(this, 'value', option.value);
   },
 
   _selectOptionMultiple(option) {
     const previousValue = get(this, 'value');
-    const newValue = previousValue.concat(option);
+    const newValue = previousValue.concat(option.value);
 
     set(this, 'value', newValue);
   }

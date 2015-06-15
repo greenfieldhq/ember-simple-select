@@ -24,6 +24,32 @@ test('it renders', function(assert) {
   assert.equal(component._state, 'inDOM');
 });
 
+test('options', function(assert) {
+  assert.expect(1);
+
+  const eric = { id: 1, name: 'Eric' };
+  const dave = { id: 2, name: 'Dave' };
+  const mike = { id: 3, name: 'Mike' };
+  const people = [eric, dave, mike];
+
+  const component = this.subject();
+
+  run(() => {
+    set(component, 'options', people);
+    set(component, 'optionLabelPath', 'name');
+    set(component, 'optionValuePath', 'id');
+  });
+
+  const expectedWrappedOptions = [
+    { label: 'Eric', value: 1, option: eric },
+    { label: 'Dave', value: 2, option: dave },
+    { label: 'Mike', value: 3, option: mike }
+  ];
+  const wrappedOptions = get(component, 'wrappedOptions');
+
+  assert.deepEqual(wrappedOptions, expectedWrappedOptions);
+});
+
 moduleForComponent('simple-select', 'Integration | Component | simple select', {
   integration: true
 });
@@ -57,6 +83,75 @@ test('single - when options is an array of strings', function(assert) {
 
   // value in parent context
   assert.deepEqual(get(this, 'selectedPerson'), 'Dave', 'selectedPeople in parent context updated');
+});
+
+test('single - when options is an array of objects without optionValuePath', function(assert) {
+  assert.expect(8);
+
+  const eric = { id: 1, name: 'Eric' };
+  const dave = { id: 2, name: 'Dave' };
+  const mike = { id: 3, name: 'Mike' };
+  const people = [eric, dave, mike];
+
+  this.render(hbs`
+    {{simple-select options=people value=selectedPerson optionLabelPath="name"}}
+  `);
+
+  run(() => {
+    set(this, 'people', people);
+    set(this, 'selectedPerson', eric);
+  });
+
+  assert.equal(this.$().find('.x-select__option').length, 2, 'has correct initial available options');
+  assert.equal(this.$().find('.x-select__selected-option').length, 1, 'has correct initial selected options');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 1, 'has Eric option selected');
+
+  this.$().find('.x-select__option:contains("Dave")')[0].click();
+
+  // available options
+  assert.equal(this.$().find('.x-select__option:contains("Dave")').length, 0, 'Dave option was removed from dropdown');
+  assert.equal(this.$().find('.x-select__option').length, 2, 'correct number of options after removing');
+
+  // selected options
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 0, 'eric option is no longer selected');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is selected');
+
+  // value in parent context
+  assert.deepEqual(get(this, 'selectedPerson'), dave, 'selectedPeople in parent context updated');
+});
+
+test('single - when options is an array of objects and optionValuePath is specified', function(assert) {
+  assert.expect(7);
+
+  const eric = { id: 1, name: 'Eric' };
+  const dave = { id: 2, name: 'Dave' };
+  const mike = { id: 3, name: 'Mike' };
+  const people = [eric, dave, mike];
+
+  this.render(hbs`
+    {{simple-select options=people value=selectedPerson optionLabelPath="name" optionValuePath="id"}}
+  `);
+
+  run(() => {
+    set(this, 'people', people);
+    set(this, 'selectedPerson', eric.id);
+  });
+
+  assert.equal(this.$().find('.x-select__option').length, 2, 'has correct initial available options');
+  assert.equal(this.$().find('.x-select__selected-option').length, 1, 'has correct initial selected options');
+
+  this.$().find('.x-select__option:contains("Dave")')[0].click();
+
+  // available options
+  assert.equal(this.$().find('.x-select__option:contains("Dave")').length, 0, 'Dave option was removed');
+  assert.equal(this.$().find('.x-select__option').length, 2, 'correct number of options after removing');
+
+  // selected options
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 0, 'eric option is no longer selected');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is selected');
+
+  // value in parent context
+  assert.deepEqual(get(this, 'selectedPerson'), dave.id, 'selectedPeople in parent context updated');
 });
 
 // multiple
@@ -94,4 +189,73 @@ test('multiple - when options is an array of strings', function(assert) {
 
   assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 0, 'eric option is no longer selected');
   assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is still selected');
+});
+
+test('multiple - when options is an array of objects without optionValuePath', function(assert) {
+  assert.expect(8);
+
+  const eric = { id: 1, name: 'Eric' };
+  const dave = { id: 2, name: 'Dave' };
+  const mike = { id: 3, name: 'Mike' };
+  const people = [eric, dave, mike];
+
+  this.render(hbs`
+    {{simple-select multiple=true options=people value=selectedPeople optionLabelPath="name"}}
+  `);
+
+  run(() => {
+    set(this, 'people', people);
+    set(this, 'selectedPeople', [eric]);
+  });
+
+  assert.equal(this.$().find('.x-select__option').length, 2, 'has correct initial available options');
+  assert.equal(this.$().find('.x-select__selected-option').length, 1, 'has correct initial selected options');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 1, 'has Eric option selected');
+
+  this.$().find('.x-select__option:contains("Dave")')[0].click();
+
+  // available options
+  assert.equal(this.$().find('.x-select__option:contains("Dave")').length, 0, 'Dave option was removed from dropdown');
+  assert.equal(this.$().find('.x-select__option').length, 1, 'only mike option available');
+
+  // selected options
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 1, 'eric option is still selected');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is selected');
+
+  // value in parent context
+  assert.deepEqual(get(this, 'selectedPeople'), [eric, dave], 'selectedPeople in parent context updated');
+});
+
+test('multiple - when options is an array of objects and optionValuePath is specified', function(assert) {
+  assert.expect(7);
+
+  const eric = { id: 1, name: 'Eric' };
+  const dave = { id: 2, name: 'Dave' };
+  const mike = { id: 3, name: 'Mike' };
+  const people = [eric, dave, mike];
+
+  this.render(hbs`
+    {{simple-select multiple=true options=people value=selectedPeople optionLabelPath="name" optionValuePath="id"}}
+  `);
+
+  run(() => {
+    set(this, 'people', people);
+    set(this, 'selectedPeople', [eric.id]);
+  });
+
+  assert.equal(this.$().find('.x-select__option').length, 2, 'has correct initial available options');
+  assert.equal(this.$().find('.x-select__selected-option').length, 1, 'has correct initial selected options');
+
+  this.$().find('.x-select__option:contains("Dave")')[0].click();
+
+  // available options
+  assert.equal(this.$().find('.x-select__option:contains("Dave")').length, 0, 'Dave option was removed from dropdown');
+  assert.equal(this.$().find('.x-select__option').length, 1, 'correct number of options after removing');
+
+  // selected options
+  assert.equal(this.$().find('.x-select__selected-option:contains("Eric")').length, 1, 'eric option is no longer selected');
+  assert.equal(this.$().find('.x-select__selected-option:contains("Dave")').length, 1, 'dave option is selected');
+
+  // value in parent context
+  assert.deepEqual(get(this, 'selectedPeople'), [eric.id, dave.id], 'selectedPeople in parent context updated');
 });
