@@ -19,8 +19,8 @@
     {{input value=query placeholder="Search" class="x-select__search"}}
 
     {{#each availableOptions as |option|}}
-      <div {{action "selectOption" option}} class="x-select__option">
-        {{option}}
+      <div {{action "selectOption" option.option}} class="x-select__option">
+        {{option.label}}
       </div>
     {{/each}}
   </div>

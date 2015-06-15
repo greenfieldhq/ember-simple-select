@@ -15,20 +15,38 @@ export default Ember.Component.extend({
 
     this.multiple = false;
     this.options = [];
+    this.optionLabelPath = '';
+    this.optionValuePath = '';
   },
 
-  availableOptions: computed('options', 'value', function() {
+  availableOptions: computed('wrappedOptions', 'value', function() {
     const multiple = get(this, 'multiple');
-    const options = get(this, 'options');
+    const wrappedOptions = get(this, 'wrappedOptions');
     const value = get(this, 'value');
 
     if (multiple) {
-      return options.filter((option) => {
-        return !Ember.A(value).contains(option);
+      return wrappedOptions.filter((option) => {
+        return !Ember.A(value).contains(option.option);
       });
     } else {
-      return Ember.A(options).without(value);
+      return wrappedOptions.filter((option) => {
+        return option.option !== value;
+      });
     }
+  }),
+
+  wrappedOptions: computed('options', function() {
+    const options = get(this, 'options');
+    const optionLabelPath = get(this, 'optionLabelPath');
+    const optionValuePath = get(this, 'optionValuePath');
+
+    return options.map((option) => {
+      return {
+        label: get(option, optionLabelPath),
+        value: get(option, optionValuePath),
+        option: option
+      };
+    });
   }),
 
   actions: {
